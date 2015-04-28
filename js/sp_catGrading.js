@@ -31,8 +31,8 @@
             var self = this;
             buttonElem.click( function(){
                 compid = $(this).data( 'compid' );
-                var fieldNameElem = $( '#' + self.fieldInputPrefix + compid );
-                var fieldTypeElem = $( '#' + self.gradingTypePrefix + compid );
+                var fieldNameElem = $( '#' + self.FIELD_INPUT_PREFIX + compid );
+                var fieldTypeElem = $( '#' + self.GRADING_TYPE_PREFIX + compid );
                 self.saveNewField( fieldNameElem, fieldTypeElem, compid );
             });
         },
@@ -57,7 +57,7 @@
                 },
                 dataType : 'html',
                 success: function( response ){
-                    $( '#' + self.gradingFieldContainer + compID ).append( response );
+                    $( '#' + self.GRADING_FIELD_CONTAINER + compID ).append( response );
                 },
                 error    : function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent)
@@ -65,13 +65,54 @@
                 }
             });
         },
-
         /**
-         * Dynamically initializes field
+         * Class an AJAX function to save an existing field's name
+         * @param newName
+         * @param fieldKey
+         * @param compID
          */
-        initFieldHandler: function(){
-
+        saveFieldName: function( newName, fieldKey, compID ){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    nonce  : SP_NONCE,
+                    action : 'sp_grading_set_field_name',
+                    fieldName : newName,
+                    fieldKey  : fieldKey,
+                    compid    : compID
+                },
+                dataType : 'json',
+                success  : function(response, statusText, jqXHR){
+                    console.log( response );
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    sp_admin.adminpage.showError(errorThrown, null);
+                }
+            })
         },
+        /**
+         * Makes all the name fields editable using jQuery editable
+         * @param fieldElems
+         */
+        initEditableFieldName: function( fieldElems ){
+            var self = this;
+            fieldElems.editable(function(value, settings){
+                    var fieldKey = $(this).data('fieldkey');
+                    var compID   = $(this).data('compid');
+
+                    self.saveFieldName( value, fieldKey, compID );
+                    return value;
+                },
+                {
+                    placeholder: 'Click to add a grading field name',
+                    onblur     : 'submit',
+                    cssclass   : 'editableCatCompTitle',
+                    maxlength  : 35
+                }
+            )
+        },
+
 
         /**
          * Initialize JS for the grading cmoponent
@@ -79,15 +120,16 @@
         init: function() {
             var self = this;
 
-            // initializes vars
-            self.fieldInputPrefix  = 'sp-new-grading-field-';
-            self.gradingTypePrefix = 'grading-type-';
-            self.gradingFieldContainer = 'sp-grading-field-container-';
-
-            self.addNewFieldButton = $( '.submit-new-grading-field' );
+            // initialize element ids
+            self.FIELD_INPUT_PREFIX      = 'sp-new-grading-field-';
+            self.GRADING_TYPE_PREFIX     = 'grading-type-';
+            self.GRADING_FIELD_CONTAINER = 'sp-grading-field-container-';
+            self.ADD_NEW_FIELD_BUTTON    = $( '.submit-new-grading-field' );
+            self.GRADING_FIELD_EDITABLE_CLASS  = 'grading-field-editable';
 
             // initialize methods
-            self.addNewFieldHandler( self.addNewFieldButton );
+            self.addNewFieldHandler( self.ADD_NEW_FIELD_BUTTON );
+            self.initEditableFieldName( $('.' + self.GRADING_FIELD_EDITABLE_CLASS ) );
         }
     };
 

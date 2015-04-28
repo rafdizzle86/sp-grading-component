@@ -92,8 +92,12 @@ if (!class_exists("sp_catGrading")) {
             </p>
             <!-- contains the different fields -->
             <?php if( !empty( $options->fields) ){ echo '<p>Existing fields: </p>'; } ?>
-            <table id="sp-grading-field-container-<?php echo $this->ID ?>" class="sp-grading-field-container" style="width: 100%; border: 1px solid silver;">
-                <tr><th>Field Name</th><th>Field Type</th><th>Delete</th></tr>
+            <table id="sp-grading-field-container-<?php echo $this->ID ?>" class="sp-grading-field-container">
+                <tr>
+                    <th scope="col" class="col-field-name">Field Name</th>
+                    <th scope="col" class="col-field-type">Field Type</th>
+                    <th scope="col" class="col-field-del">Delete</th>
+                </tr>
                 <?php
                 if( is_array( $options->fields ) ){
                     foreach( $options->fields as $field_key => $field ){
@@ -130,7 +134,7 @@ if (!class_exists("sp_catGrading")) {
             ?>
             <tr>
                 <td>
-                    <span id="grading-field-<?php echo $field_key ?>" class="grading-field-editable" data-fieldkey="<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>"><?php echo $field_obj->field_name ?></span>
+                    <span id="grading-field-<?php echo $field_key ?>" class="grading-field-editable" data-fieldkey="<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>"><?php echo stripslashes( $field_obj->field_name ) ?></span>
                 </td>
                 <td>
                     <?php self::render_grade_types_dropdown( $field_obj->field_type ) ?>
@@ -153,7 +157,7 @@ if (!class_exists("sp_catGrading")) {
          * @see parent::setOptions()
          */
         function setOptions($data = null){
-            $options = maybe_serialize($data);
+            $options = maybe_serialize( $data );
             return sp_core::updateVar('sp_catComponents', $this->ID, 'options', $options, '%s');
         }
 
