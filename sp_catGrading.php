@@ -11,6 +11,8 @@ if (!class_exists("sp_catGrading")) {
      */
     class sp_catGrading extends sp_catComponent{
 
+        public $grade_types = array( 'alpha' => 'Alpha', 'num' => 'Numeric' );
+
         function __construct($compID = 0, $catID = 0, $name = '',
                              $description = '', $typeID = 0, $order = 0,
                              $options = null, $default = false, $required = false){
@@ -57,8 +59,8 @@ if (!class_exists("sp_catGrading")) {
          * Add content component CSS
          */
         static function enqueueCSS(){
-            //wp_register_style( 'sp_catGradingCSS', plugins_url('/css/sp_catGrading.css', __FILE__));
-            //wp_enqueue_style( 'sp_catGradingCSS' );
+            wp_register_style( 'sp_catGradingCSS', plugins_url('/css/sp_catGrading.css', __FILE__));
+            wp_enqueue_style( 'sp_catGradingCSS' );
         }
 
         /**
@@ -85,15 +87,59 @@ if (!class_exists("sp_catGrading")) {
             </p>
             <p>Add a new grading field:
                 <input type="text" class="sp-new-grading-field" id="sp-new-grading-field-<?php echo $this->ID ?>" /> | Grade type:
-                <select class="grading-type" id="grading-type-<?php echo $this->ID ?>">
-                    <option id="alpha" value="alpha">Alpha</option>
-                    <option id="numeric" value="num">Numeric</option>
-                </select>
+                <?php self::render_grade_types_dropdown() ?>
                 <button type="button" id="submit-new-grading-field-<?php echo $this->ID ?>" data-compid="<?php echo $this->ID ?>" class="submit-new-grading-field button button-secondary">Submit</button>
             </p>
             <!-- contains the different fields -->
-            <div id="sp-grading-field-container-<?php echo $this->ID ?>" class="sp-grading-field-container"></div>
+            <?php if( !empty( $options->fields) ){ echo '<p>Existing fields: </p>'; } ?>
+            <table id="sp-grading-field-container-<?php echo $this->ID ?>" class="sp-grading-field-container" style="width: 100%; border: 1px solid silver;">
+                <tr><th>Field Name</th><th>Field Type</th><th>Delete</th></tr>
+                <?php
+                if( is_array( $options->fields ) ){
+                    foreach( $options->fields as $field_key => $field ){
+                        self::render_field( $field, $field_key );
+                    }
+                }
+                ?>
+            </table>
         <?php
+        }
+
+        /**
+         * Renders grade type dropdowns
+         * @param $selected
+         */
+        function render_grade_types_dropdown( $selected = '' ){
+            ?>
+            <select class="grading-type" id="grading-type-<?php echo $this->ID ?>">
+            <?php
+            if( is_array( $this->grade_types ) ){
+                foreach( $this->grade_types as $grade_key => $grade_label ){
+                    echo '<option id="' . $grade_key . '">' . $grade_label . '</option>';
+                }
+            }
+            ?>
+            </select>
+            <?php
+        }
+
+        /**
+         * Given a field_obj variable, renders a single field row
+         */
+        function render_field( $field_obj, $field_key ){
+            ?>
+            <tr>
+                <td>
+                    <span id="grading-field-<?php echo $field_key ?>" class="grading-field-editable" data-fieldkey="<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>"><?php echo $field_obj->field_name ?></span>
+                </td>
+                <td>
+                    <?php self::render_grade_types_dropdown( $field_obj->field_type ) ?>
+                </td>
+                <td>
+                    <span class="sp-grading-delete">Delete</span>
+                </td>
+            </tr>
+            <?php
         }
 
         /**

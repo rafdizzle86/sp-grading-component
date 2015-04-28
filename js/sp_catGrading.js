@@ -44,20 +44,21 @@
          * @param compID
          */
         saveNewField: function( fieldNameElem, fieldTypeElem, compID ){
-
-
-
+            var self = this;
             $.ajax({
                 url  : SP_AJAX_URL,
                 type : 'POST',
                 data : {
                     action: 'sp_grading_save_field',
                     nonce: SP_NONCE,
-                    compID: compid,
+                    compid: compid,
                     fieldname: fieldNameElem.val(),
                     fieldtype: fieldTypeElem.val()
                 },
-                dataType : 'json',
+                dataType : 'html',
+                success: function( response ){
+                    $( '#' + self.gradingFieldContainer + compID ).append( response );
+                },
                 error    : function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent)
                         smartpost.sp_postComponent.showError('Status: ' + statusText + ', Error Thrown:' + errorThrown);
@@ -66,15 +67,10 @@
         },
 
         /**
-         * Adds a new field to the DOM
-         * @param fieldNameElem
-         * @param fieldTypeElem
-         * @param compID
+         * Dynamically initializes field
          */
-        addNewField: function( fieldNameElem, fieldTypeElem, compID ){
-            var self = this;
-            //var newField =
-            $( '#' + self.gradingFieldContainer + compID ).append();
+        initFieldHandler: function(){
+
         },
 
         /**

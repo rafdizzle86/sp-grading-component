@@ -1,0 +1,7 @@
+.sp-grading-field-container tr:hover .sp-grading-delete{
+    visibility: visible;
+}
+.sp-grading-delete{
+    visibility: hidden;
+    cursor: pointer;
+}
