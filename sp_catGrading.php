@@ -49,10 +49,11 @@ if (!class_exists("sp_catGrading")) {
 
         /**
          * Add content component JS
+         * @important wp_register_script() should contain a dependency for sp_catComponentJS otherwise it will break the front-end
          */
         static function enqueueJS(){
-            wp_register_script( 'sp_catGradingJS', plugins_url('/js/sp_catGrading.js', __FILE__));
-            wp_enqueue_script( 'sp_catGradingJS', array('jquery', 'sp_admin_globals', 'sp_admin_js') );
+            wp_register_script( 'sp_catGradingJS', plugins_url('/js/sp_catGrading.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_catComponentJS' ));
+            wp_enqueue_script( 'sp_catGradingJS' );
         }
 
         /**
@@ -89,6 +90,7 @@ if (!class_exists("sp_catGrading")) {
                 <input type="text" class="sp-new-grading-field" id="sp-new-grading-field-<?php echo $this->ID ?>" /> | Grade type:
                 <?php self::render_grade_types_dropdown() ?>
                 <button type="button" id="submit-new-grading-field-<?php echo $this->ID ?>" data-compid="<?php echo $this->ID ?>" class="submit-new-grading-field button button-secondary">Submit</button>
+                <span class="sp-grading-submit-loader" id="sp-grading-submit-loader-<?php echo $this->ID ?>"><img src="<?php echo SP_IMAGE_PATH . '/loading.gif' ?>" /> Adding new field...</span>
             </p>
             <!-- contains the different fields -->
             <?php if( !empty( $options->fields) ){ echo '<p>Existing fields: </p>'; } ?>
@@ -134,7 +136,7 @@ if (!class_exists("sp_catGrading")) {
          */
         function render_field( $field_obj, $field_key ){
             ?>
-            <tr>
+            <tr id="sp-field-row-<?php echo $this->ID?>-<?php echo $field_key ?>">
                 <td>
                     <span id="grading-field-<?php echo $field_key ?>" class="grading-field-editable" data-fieldkey="<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>"><?php echo stripslashes( $field_obj->field_name ) ?></span>
                 </td>
@@ -142,7 +144,7 @@ if (!class_exists("sp_catGrading")) {
                     <?php self::render_grade_types_dropdown( $field_obj->field_type ) ?>
                 </td>
                 <td>
-                    <span class="sp-grading-delete" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>">Delete</span>
+                    <span class="sp-grading-delete" id="sp-grading-delete-<?php echo $this->ID ?>-<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>">Delete</span>
                 </td>
             </tr>
             <?php

@@ -30,9 +30,14 @@
         addNewFieldHandler: function( buttonElem ){
             var self = this;
             buttonElem.click( function(){
-                compid = $(this).data( 'compid' );
+                var compid = $(this).data( 'compid' );
                 var fieldNameElem = $( '#' + self.FIELD_INPUT_PREFIX + compid );
                 var fieldTypeElem = $( '#' + self.GRADING_TYPE_PREFIX + compid );
+
+                // Show loader
+                $('#' + self.SUBMIT_LOADER_GIF_PREFIX_ID + compid).show();
+
+                // Add the new field
                 self.saveNewField( fieldNameElem, fieldTypeElem, compid );
             });
         },
@@ -51,15 +56,23 @@
                 data : {
                     action: 'sp_grading_save_field',
                     nonce: SP_NONCE,
-                    compid: compid,
+                    compid: compID,
                     fieldname: fieldNameElem.val(),
                     fieldtype: fieldTypeElem.val()
                 },
                 dataType : 'html',
                 success: function( response ){
                     $( '#' + self.GRADING_FIELD_CONTAINER + compID ).append( response );
-                    var editableFieldElemID = $(response).find( '.grading-field-editable:first').attr('id');
+
+                    // Find the elems that we need to initialize
+                    var editableFieldElemID = $(response).find('.grading-field-editable:first').attr('id');
+                    var deleteElemID = $(response).find('.' + self.DELETE_FIELD_CLASS).attr('id');
+
+                    // Bind handlers to elems
                     self.initEditableFieldName( $('#' + editableFieldElemID) ); // initialize editable field name
+                    self.initDeleteHandler( $('#'+ deleteElemID) ); // initialize deleting fields
+
+                    $('#' + self.SUBMIT_LOADER_GIF_PREFIX_ID + compID).hide(); // hide loader
                 },
                 error    : function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent)
@@ -121,19 +134,19 @@
          * @param compID
          */
         deleteField: function( fieldKey, compID ){
+            var self = this;
             $.ajax({
                 url		 : SP_AJAX_URL,
                 type     : 'POST',
                 data	 : {
                     nonce  : SP_NONCE,
-                    action : 'sp_grading_set_field_name',
-                    fieldName : newName,
+                    action : 'sp_grading_delete_field',
                     fieldKey  : fieldKey,
                     compid    : compID
                 },
                 dataType : 'json',
                 success  : function(response, statusText, jqXHR){
-                    console.log( response );
+                    $('#' + self.GRADING_FIELD_ROW_PREFIX_ID + compID + '-' + fieldKey).remove();
                 },
                 error    : function(jqXHR, statusText, errorThrown){
                     sp_admin.adminpage.showError(errorThrown, null);
@@ -146,11 +159,12 @@
          * @param deleteElem
          */
         initDeleteHandler: function( deleteElem ){
+            var self = this;
             deleteElem.click(function(){
                 var fieldKey = $(this).data('fieldkey');
                 var compid   = $(this).data('compid');
-                console.log( fieldKey );
-                console.log( compid );
+                $('#' + self.GRADING_FIELD_ROW_PREFIX_ID + compid + '-' + fieldKey).html( '<td><img src="' + SP_IMAGE_PATH + '/loading.gif"> Removing field...</td>');
+                self.deleteField( fieldKey, compid );
             });
         },
         /**
@@ -183,6 +197,8 @@
             self.GRADING_FIELD_CONTAINER = 'sp-grading-field-container-';
             self.ADD_NEW_FIELD_BUTTON_CLASS   = 'submit-new-grading-field';
             self.GRADING_FIELD_EDITABLE_CLASS = 'grading-field-editable';
+            self.GRADING_FIELD_ROW_PREFIX_ID = 'sp-field-row-'; //sp-field-row-<COMP_ID>-<FIELD_KEY>, @see self.deleteField
+            self.SUBMIT_LOADER_GIF_PREFIX_ID = 'sp-grading-submit-loader-';
 
             // initialize methods
             self.addNewFieldHandler( $('.' + self.ADD_NEW_FIELD_BUTTON_CLASS ) );

@@ -23,7 +23,12 @@
 .grading-field-editable{
     cursor: pointer;
 }
-
 .grading-field-editable:hover{
     font-weight: bold;
+}
+.sp-grading-submit-loader{
+    display: none;
+}
+.sp-grading-submit-loader img{
+    vertical-align: middle;
 }

@@ -14,7 +14,6 @@ if (!class_exists("sp_catGradingAJAX")) {
             add_action('wp_ajax_sp_grading_save_field', array('sp_catGradingAJAX', 'sp_grading_save_field'));
             add_action('wp_ajax_sp_grading_set_field_name', array('sp_catGradingAJAX', 'sp_grading_set_field_name'));
             add_action('wp_ajax_sp_grading_delete_field', array('sp_catGradingAJAX', 'sp_grading_delete_field'));
-
         }
 
         /**
@@ -69,16 +68,15 @@ if (!class_exists("sp_catGradingAJAX")) {
             $comp_id = (int) $_POST['compid'];
             $field_key = (int) $_POST['fieldKey'];
 
+            // Get the grading component
             $sp_cat_grading = new sp_catGrading( $comp_id );
             $options = $sp_cat_grading->getOptions();
-            if( !is_object( $options ) || empty( $options ) ){
-                $options = new stdClass();
-            }
 
             if( !isset( $options->fields[ $field_key ] ) ){
                 header("HTTP/1.0 409 Could find field key is not associated with any field.");
                 exit;
             }else{
+                // Remove the field
                 unset( $options->fields[ $field_key ] );
                 $success = $sp_cat_grading->setOptions( $options );
                 if( $success !== false ){
