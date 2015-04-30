@@ -2,7 +2,7 @@
  * Handles admin-side JS for the SmartPost grading component
  */
 (function($) {
-    smartpost.sp_postGrading = {
+    sp_admin.sp_catGrading = {
 
         /**
          * Required for all post component JS objects.
@@ -10,13 +10,13 @@
          * methods to call for different post component types
          */
         setTypeID: function(){
-            if(sp_globals){
-                var types = sp_globals.SP_TYPES;
+            if(sp_admin){
+                var types = sp_admin.SP_TYPES;
 
                 //!Important - the raw name of the type
-                if(types['Content']){
-                    this.typeID = types['Content'];
-                    sp_globals.SP_TYPES[this.typeID] = this;
+                if(types['Grading']){
+                    this.typeID = types['Grading']; // Get the type ID of our object
+                    sp_admin.SP_TYPES['Grading'] = this; // Overwrite it with this object
                 }
             }else{
                 return 0;
@@ -58,6 +58,8 @@
                 dataType : 'html',
                 success: function( response ){
                     $( '#' + self.GRADING_FIELD_CONTAINER + compID ).append( response );
+                    var editableFieldElemID = $(response).find( '.grading-field-editable:first').attr('id');
+                    self.initEditableFieldName( $('#' + editableFieldElemID) ); // initialize editable field name
                 },
                 error    : function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent)
@@ -89,7 +91,7 @@
                 error    : function(jqXHR, statusText, errorThrown){
                     sp_admin.adminpage.showError(errorThrown, null);
                 }
-            })
+            });
         },
         /**
          * Makes all the name fields editable using jQuery editable
@@ -113,29 +115,86 @@
             )
         },
 
+        /**
+         * Delete a field key
+         * @param fieldKey
+         * @param compID
+         */
+        deleteField: function( fieldKey, compID ){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    nonce  : SP_NONCE,
+                    action : 'sp_grading_set_field_name',
+                    fieldName : newName,
+                    fieldKey  : fieldKey,
+                    compid    : compID
+                },
+                dataType : 'json',
+                success  : function(response, statusText, jqXHR){
+                    console.log( response );
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    sp_admin.adminpage.showError(errorThrown, null);
+                }
+            });
+        },
 
+        /**
+         * Handles deleting grading fields
+         * @param deleteElem
+         */
+        initDeleteHandler: function( deleteElem ){
+            deleteElem.click(function(){
+                var fieldKey = $(this).data('fieldkey');
+                var compid   = $(this).data('compid');
+                console.log( fieldKey );
+                console.log( compid );
+            });
+        },
+        /**
+         * Initialize component if it was created dynamically
+         */
+        initComponent: function(componentElem){
+            var self = this;
+
+            // Initialize new field button
+            var addNewFieldButton = componentElem.find( '.' + self.ADD_NEW_FIELD_BUTTON_CLASS );
+            self.addNewFieldHandler( addNewFieldButton );
+
+            // Initalize the CK Editor
+            if( smartpost.sp_post ){
+                var spEditor = componentElem.find( '.sp-editor-content' );
+                smartpost.sp_post.initCkEditors( spEditor );
+            }
+
+        },
         /**
          * Initialize JS for the grading cmoponent
          */
-        init: function() {
+        init: function(){
             var self = this;
 
             // initialize element ids
+            self.DELETE_FIELD_CLASS      = 'sp-grading-delete';
             self.FIELD_INPUT_PREFIX      = 'sp-new-grading-field-';
             self.GRADING_TYPE_PREFIX     = 'grading-type-';
             self.GRADING_FIELD_CONTAINER = 'sp-grading-field-container-';
-            self.ADD_NEW_FIELD_BUTTON    = $( '.submit-new-grading-field' );
-            self.GRADING_FIELD_EDITABLE_CLASS  = 'grading-field-editable';
+            self.ADD_NEW_FIELD_BUTTON_CLASS   = 'submit-new-grading-field';
+            self.GRADING_FIELD_EDITABLE_CLASS = 'grading-field-editable';
 
             // initialize methods
-            self.addNewFieldHandler( self.ADD_NEW_FIELD_BUTTON );
+            self.addNewFieldHandler( $('.' + self.ADD_NEW_FIELD_BUTTON_CLASS ) );
             self.initEditableFieldName( $('.' + self.GRADING_FIELD_EDITABLE_CLASS ) );
+            self.initDeleteHandler( $('.' + self.DELETE_FIELD_CLASS ) );
+
+            self.setTypeID();
         }
     };
 
-
     $(document).ready(function(){
-        smartpost.sp_postGrading.init();
+        sp_admin.sp_catGrading.init();
     });
 
 })(jQuery);

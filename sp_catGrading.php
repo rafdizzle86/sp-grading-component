@@ -52,7 +52,7 @@ if (!class_exists("sp_catGrading")) {
          */
         static function enqueueJS(){
             wp_register_script( 'sp_catGradingJS', plugins_url('/js/sp_catGrading.js', __FILE__));
-            wp_enqueue_script( 'sp_catGradingJS', array('jquery', 'sp_admin_globals', 'sp_admin_js', 'sp_catComponentJS') );
+            wp_enqueue_script( 'sp_catGradingJS', array('jquery', 'sp_admin_globals', 'sp_admin_js') );
         }
 
         /**
@@ -129,6 +129,8 @@ if (!class_exists("sp_catGrading")) {
 
         /**
          * Given a field_obj variable, renders a single field row
+         * @param $field_obj
+         * @param $field_key
          */
         function render_field( $field_obj, $field_key ){
             ?>
@@ -140,7 +142,7 @@ if (!class_exists("sp_catGrading")) {
                     <?php self::render_grade_types_dropdown( $field_obj->field_type ) ?>
                 </td>
                 <td>
-                    <span class="sp-grading-delete">Delete</span>
+                    <span class="sp-grading-delete" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>">Delete</span>
                 </td>
             </tr>
             <?php
