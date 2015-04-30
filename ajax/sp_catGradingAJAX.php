@@ -19,7 +19,7 @@ if (!class_exists("sp_catGradingAJAX")) {
         /**
          * AJAX function that saves the description
          */
-        public static function sp_grading_save_desc(){
+        function sp_grading_save_desc(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 403 Security Check.");

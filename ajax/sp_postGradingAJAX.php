@@ -12,7 +12,7 @@ if (!class_exists("sp_postGradingAJAX")) {
     {
         static function init()
         {
-            add_action('wp_ajax_sp_grading_save_desc', array('sp_postGradingAJAX', 'sp_grading_save_desc'));
+            //add_action('wp_ajax_sp_grading_save_desc', array('sp_postGradingAJAX', 'sp_grading_save_desc'));
         }
     }
 }
