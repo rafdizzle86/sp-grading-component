@@ -11,15 +11,21 @@ if (!class_exists("sp_postGrading")) {
                              $name = '', $value = '', $postID = 0){
             $compInfo = compact("compID", "catCompID", "compOrder", "name", "value", "postID");
 
-            //Set the default grading options
-            $gradingOptions = sp_catComponent::getOptionsFromID($catCompID);
+            //Set the default grading options when creating a new component
+            $gradingOptions = sp_catComponent::getOptionsFromID( $catCompID );
             $this->options = $gradingOptions;
 
             $this->initComponent($compInfo);
+
+            //Get the grading options again, but this time for an existing component..
+            $gradingOptions = sp_catComponent::getOptionsFromID( $this->catCompID );
+            $this->options = $gradingOptions;
         }
 
         /**
          * @see parent::renderEditMode()
+         * @param string $value
+         * @return string
          */
         function renderEditMode($value = ""){
 
@@ -51,7 +57,14 @@ if (!class_exists("sp_postGrading")) {
          */
         function renderViewMode(){
             $html = '<div id="sp_grading" style="margin: 20px">';
-            $html .= do_shortcode( $this->value );
+
+            $component_desc = !empty( $this->options->comp_desc ) ? $this->options->comp_desc : '';
+            $html .= do_shortcode( $component_desc );
+
+            // Add the grading table
+            ob_start();
+            $this->render_grading_fields();
+            $html .= ob_get_clean();
 
             $html .= '</div>';
             return $html;
@@ -72,7 +85,7 @@ if (!class_exists("sp_postGrading")) {
                 <?php
                 if( is_array( $options->fields ) ){
                     foreach( $options->fields as $field_key => $field ){
-                        self::render_field( $field, $field_key );
+                        self::render_field( $field, $field_key, current_user_can( 'edit_dashboard' ) );
                     }
                 }
                 ?>
@@ -143,8 +156,7 @@ if (!class_exists("sp_postGrading")) {
          * @see parent::isEmpty();
          */
         function isEmpty(){
-            $strippedContent = trim(strip_tags($this->value));
-            return empty($strippedContent);
+            return false; // Not sure what "empty" means for this component, so return false always
         }
     }
 }

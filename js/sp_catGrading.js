@@ -125,7 +125,7 @@
                     cssclass   : 'editableCatCompTitle',
                     maxlength  : 35
                 }
-            )
+            );
         },
 
         /**

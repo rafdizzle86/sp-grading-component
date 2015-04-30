@@ -27,8 +27,42 @@
                 return 0;
             }
         },
+        initEditableGradeFields: function( fieldElems){
+            var self = this;
+            fieldElems.editable(function(value, settings){
+                    var fieldKey = $(this).data('fieldkey');
+                    var compID   = $(this).data('compid');
+                    //self.saveGrade( fieldKey, compID );
+                    return value;
+                },
+                {
+                    placeholder: 'Click to add a grade',
+                    onblur     : 'submit',
+                    cssclass   : 'editableCatCompTitle',
+                    maxlength  : 35
+                }
+            );
+        },
         init: function(){
+            var self = this;
 
+            // Initialize constants
+            self.GRADE_FIELD_EDITABLE_CLASS = 'grading-field-grade-editable';
+            self.GRADE_FIELD_PREFIX_ID = 'grading-field-grade-'; //grading-field-grade-<COMP_ID>-<FIELD_KEY>
+
+            // Init/Bind handlers
+            console.log(self.GRADE_FIELD_EDITABLE_CLASS);
+
+            self.initEditableGradeFields( $('.' + self.GRADE_FIELD_EDITABLE_CLASS ) );
+            /*
+            $('.' + self.GRADING_FIELD_EDITABLE_CLASS ).each( function(index){
+                console.log(index);
+                console.log( $(this) );
+                self.initEditableGradeFields( $(this) );
+            });
+            */
+
+            self.setTypeID();
         }
     };
 

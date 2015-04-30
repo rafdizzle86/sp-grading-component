@@ -60,7 +60,7 @@ if (!class_exists("sp_catGrading")) {
          * Add content component CSS
          */
         static function enqueueCSS(){
-            wp_register_style( 'sp_catGradingCSS', plugins_url('/css/sp_catGrading.css', __FILE__));
+            wp_register_style( 'sp_catGradingCSS', plugins_url('/css/sp_catGrading.css', __FILE__), array( 'sp_admin_css' ) );
             wp_enqueue_style( 'sp_catGradingCSS' );
         }
 
