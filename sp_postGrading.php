@@ -12,14 +12,66 @@ if (!class_exists("sp_postGrading")) {
             $compInfo = compact("compID", "catCompID", "compOrder", "name", "value", "postID");
 
             //Set the default grading options when creating a new component
-            $gradingOptions = sp_catComponent::getOptionsFromID( $catCompID );
-            $this->options = $gradingOptions;
+            $default_grading_options = sp_catComponent::getOptionsFromID( $catCompID );
+            $this->options = $default_grading_options;
 
-            $this->initComponent($compInfo);
+            $this->initComponent( $compInfo );
 
-            //Get the grading options again, but this time for an existing component..
-            $gradingOptions = sp_catComponent::getOptionsFromID( $this->catCompID );
-            $this->options = $gradingOptions;
+            // Get the grading options again, but this time for an existing component..
+            $default_grading_options = sp_catComponent::getOptionsFromID( $this->catCompID );
+            $this->options = $default_grading_options;
+        }
+
+        /**
+         * We are overriding the render() function from the parent for security reasons.
+         * @param bool $force_edit_mode - Forces the component to be rendered in "Edit Mode"
+         * @return string - XHTML of the component
+         */
+        function render( $force_edit_mode = false ){
+
+            // Establish whether we are in edit mode or not
+            $edit_mode = $force_edit_mode ? true : (bool) $_GET['edit_mode'];
+
+            require_once(ABSPATH . 'wp-admin/includes/post.php');
+            $is_locked = (bool) wp_check_post_lock( $this->postID );
+
+            $html = '';
+
+            // Return preview mode if we're listing posts
+            if( !is_single() ){
+                if( !$this->isEmpty() ){
+                    $html = $this->renderPreview() . ' ';
+                }
+                return $html;
+            }
+
+            // Return edit mode component if we're an admin or an owner
+            if( current_user_can('edit_post', $this->postID) && $edit_mode && !$is_locked ){
+                $html = '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp-component-edit-mode' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
+
+                if( current_user_can( 'manage_options' ) ) {
+                    $html .= $this->render_comp_title( true );
+                    $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
+                    $html .= '<div class="componentHandle tooltip" title="Drag up or down"><div class="theHandle"></div></div>';
+                }else{
+                    $html .= $this->render_comp_title( false );
+                }
+
+                $html .= $this->renderEditMode();
+                $html .= '<div class="clear"></div>';
+                $html .= '</div><!-- end #comp-' . $this->ID .' -->';
+
+            }else{ // Otherwise return "view mode"
+                if( !$this->isEmpty() && current_user_can( 'edit_post', $this->postID ) ){
+                    $html = '<div id="comp-' .  $this->ID . '" class="sp_component">';
+                    $html .= $this->render_comp_title();
+                    $html .= '<div class="clear"></div>';
+                    $html .= $this->renderViewMode();
+                    $html .= '<div class="clear"></div>';
+                    $html .= '</div><!-- end #comp-' . $this->ID .' -->';
+                }
+            }
+            return $html;
         }
 
         /**
@@ -29,25 +81,30 @@ if (!class_exists("sp_postGrading")) {
          */
         function renderEditMode($value = ""){
 
-            $component_desc = !empty( $this->options->comp_desc ) ? $this->options->comp_desc : '';
-            if( current_user_can( 'edit_dashboard' ) ) {
+            $settings = $this->value;
 
-                // Create an editor area for a video description
+            if( $settings->dirty_desc ){
+                $component_desc = $settings->grading_desc;
+            }else{
+                $component_desc = $this->options->comp_desc;
+            }
+
+            if( current_user_can( 'manage_options' ) ) {
                 $html = sp_core::sp_editor(
                     $component_desc,
                     $this->ID,
                     false,
                     'Add a description here ...',
-                    array('data-action' => 'save_grading_desc_via_post', 'data-compid' => $this->ID, 'data-postid' => $this->postID)
+                    array('data-action' => 'sp_save_grading_desc_via_post', 'data-compid' => $this->ID, 'data-postid' => $this->postID)
                 );
 
-                ob_start();
-                $this->render_grading_fields();
-                $html .= ob_get_clean();
-
             }else{
-                return $component_desc;
+                $html = $component_desc;
             }
+
+            ob_start();
+            $this->render_grading_fields();
+            $html .= ob_get_clean();
 
             return $html;
         }
@@ -80,7 +137,7 @@ if (!class_exists("sp_postGrading")) {
             <table id="sp-grading-field-container-<?php echo $this->ID ?>" class="sp-grading-field-container">
                 <tr>
                     <th scope="col" class="col-field-name">Breakdown</th>
-                    <th scope="col" class="col-field-type">Grade</th>
+                    <th scope="col" class="col-field-grade">Grade</th>
                 </tr>
                 <?php
                 if( is_array( $options->fields ) ){
@@ -134,22 +191,30 @@ if (!class_exists("sp_postGrading")) {
             require_once( dirname( __FILE__ ) . '/ajax/sp_postGradingAJAX.php');
             sp_postGradingAJAX::init();
             self::enqueueJS();
+            self::enqueueCSS();
         }
 
         /**
          * Enqueues the JS to the page.
          */
         static function enqueueJS(){
-            wp_register_script( 'sp_postGrading', plugins_url('/js/sp_postGrading.js', __FILE__));
-            wp_enqueue_script( 'sp_postGrading', null, array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_postJS' ) );
+            wp_register_script( 'sp_postGradingJS', plugins_url('/js/sp_postGrading.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_postJS' ) );
+            wp_enqueue_script( 'sp_postGradingJS' );
+        }
+
+        static function enqueueCSS(){
+            wp_register_style( 'sp_postGradingCSS', plugins_url('/css/sp_postGrading.css', __FILE__)  );
+            wp_enqueue_style( 'sp_postGradingCSS' );
         }
 
         /**
          * @see parent::update();
+         * @param null $comp_instance_settings // Save the settings fo this instance
+         * @return bool|int
          */
-        function update($grading = ''){
-            $this->value = (string) stripslashes_deep( $grading );
-            return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $this->value, '%s');
+        function update($comp_instance_settings = null){
+            $this->value = $comp_instance_settings;
+            return sp_core::updateVar('sp_postComponents', $this->ID, 'value', maybe_serialize( $this->value ), '%s');
         }
 
         /**

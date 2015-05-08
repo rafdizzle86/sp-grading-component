@@ -37,11 +37,16 @@
                 },
                 {
                     placeholder: 'Click to add a grade',
-                    onblur     : 'submit',
+                    onblur     : false,
                     cssclass   : 'editableCatCompTitle',
                     maxlength  : 35
                 }
             );
+        },
+        initComponent: function( component, postID, autoFocus){
+            var self = this;
+            var editableFields = component.find( '.' + self.GRADE_FIELD_EDITABLE_CLASS );
+            self.initEditableGradeFields( editableFields );
         },
         init: function(){
             var self = this;
@@ -51,16 +56,7 @@
             self.GRADE_FIELD_PREFIX_ID = 'grading-field-grade-'; //grading-field-grade-<COMP_ID>-<FIELD_KEY>
 
             // Init/Bind handlers
-            console.log(self.GRADE_FIELD_EDITABLE_CLASS);
-
             self.initEditableGradeFields( $('.' + self.GRADE_FIELD_EDITABLE_CLASS ) );
-            /*
-            $('.' + self.GRADING_FIELD_EDITABLE_CLASS ).each( function(index){
-                console.log(index);
-                console.log( $(this) );
-                self.initEditableGradeFields( $(this) );
-            });
-            */
 
             self.setTypeID();
         }
