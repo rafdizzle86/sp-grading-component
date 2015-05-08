@@ -83,6 +83,7 @@ if (!class_exists("sp_postGrading")) {
 
             $settings = $this->value;
 
+            // Setup the grading description
             if( $settings->dirty_desc ){
                 $component_desc = $settings->grading_desc;
             }else{
@@ -97,14 +98,27 @@ if (!class_exists("sp_postGrading")) {
                     'Add a description here ...',
                     array('data-action' => 'sp_save_grading_desc_via_post', 'data-compid' => $this->ID, 'data-postid' => $this->postID)
                 );
-
             }else{
                 $html = $component_desc;
             }
 
+            // Setup the grading fields
             ob_start();
             $this->render_grading_fields();
             $html .= ob_get_clean();
+
+            // Setup the comment section - @uses $settings->grading_comment
+            if( current_user_can( 'manage_options' ) ) {
+                $html .= sp_core::sp_editor(
+                    $settings->grading_comment,
+                    $this->ID . '-comment',
+                    false,
+                    'Add a comment here ...',
+                    array('data-action' => 'sp_save_grading_comment', 'data-compid' => $this->ID, 'data-postid' => $this->postID)
+                );
+            }else{
+                $html .= $settings->grading_comment;
+            }
 
             return $html;
         }

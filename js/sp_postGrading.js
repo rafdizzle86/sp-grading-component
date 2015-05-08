@@ -37,11 +37,14 @@
                 },
                 {
                     placeholder: 'Click to add a grade',
-                    onblur     : false,
+                    onblur     : 'submit',
                     cssclass   : 'editableCatCompTitle',
                     maxlength  : 35
                 }
             );
+        },
+        saveGrade: function( fieldKey, compID ){
+
         },
         initComponent: function( component, postID, autoFocus){
             var self = this;
