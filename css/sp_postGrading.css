@@ -1,2 +1,8 @@
 .sp-grading-field-container .col-field-name{ width: 60%; }
 .sp-grading-field-container .col-field-grade{ width: 40%; }
+
+.grading-field-grade-editable:hover,
+.grading-field-editable:hover{
+    font-weight: bold;
+    cursor: pointer;
+}

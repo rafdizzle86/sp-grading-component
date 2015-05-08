@@ -156,7 +156,7 @@ if (!class_exists("sp_postGrading")) {
                 <?php
                 if( is_array( $options->fields ) ){
                     foreach( $options->fields as $field_key => $field ){
-                        self::render_field( $field, $field_key, current_user_can( 'edit_dashboard' ) );
+                        self::render_field( $field, $field_key, current_user_can( 'manage_options' ) );
                     }
                 }
                 ?>
@@ -174,16 +174,22 @@ if (!class_exists("sp_postGrading")) {
             ?>
             <tr id="sp-field-row-<?php echo $this->ID?>-<?php echo $field_key ?>">
                 <td>
-                    <span id="grading-field-<?php echo $field_key ?>" class="grading-field-editable" data-fieldkey="<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>"><?php echo stripslashes( $field_obj->field_name ) ?></span>
+                    <?php if( $editable ): ?>
+                    <span id="grading-field-<?php echo $field_key ?>" class="grading-field-editable" data-fieldkey="<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>">
+                        <?php echo stripslashes( $field_obj->field_name ) ?>
+                    </span>
+                    <?php else: ?>
+                        <?php echo stripslashes( $field_obj->field_name ) ?>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <?php if( $editable ): ?>
                     <span class="grading-field-grade-editable" id="grading-field-grade-<?php echo $this->ID?>-<?php echo $field_key ?>">
                         <?php echo $field_obj->grade ?>
-                    </span>
                     <?php else: ?>
                         <?php echo $field_obj->grade ?>
                     <?php endif;?>
+                    </span>
                 </td>
             </tr>
             <?php

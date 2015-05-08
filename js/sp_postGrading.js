@@ -32,7 +32,7 @@
             fieldElems.editable(function(value, settings){
                     var fieldKey = $(this).data('fieldkey');
                     var compID   = $(this).data('compid');
-                    //self.saveGrade( fieldKey, compID );
+                    self.saveGrade( fieldKey, compID );
                     return value;
                 },
                 {
@@ -43,9 +43,20 @@
                 }
             );
         },
+        /**
+         * Saves a grade for a specific field
+         * @param fieldKey
+         * @param compID
+         */
         saveGrade: function( fieldKey, compID ){
 
         },
+        /**
+         * Initializes a newly created grading component
+         * @param component
+         * @param postID
+         * @param autoFocus
+         */
         initComponent: function( component, postID, autoFocus){
             var self = this;
             var editableFields = component.find( '.' + self.GRADE_FIELD_EDITABLE_CLASS );
