@@ -52,7 +52,8 @@ if (!class_exists("sp_catGrading")) {
          * @important wp_register_script() should contain a dependency for sp_catComponentJS otherwise it will break the front-end
          */
         static function enqueueJS(){
-            wp_register_script( 'sp_catGradingJS', plugins_url('/js/sp_catGrading.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_catComponentJS' ));
+            $suffix = SCRIPT_DEBUG ? '' : '.min';
+            wp_register_script( 'sp_catGradingJS', plugins_url('/js/sp_catGrading' . $suffix . '.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_catComponentJS' ));
             wp_enqueue_script( 'sp_catGradingJS' );
         }
 
@@ -60,7 +61,8 @@ if (!class_exists("sp_catGrading")) {
          * Add content component CSS
          */
         static function enqueueCSS(){
-            wp_register_style( 'sp_catGradingCSS', plugins_url('/css/sp_catGrading.css', __FILE__), array( 'sp_admin_css' ) );
+            $suffix = SCRIPT_DEBUG ? '' : '.min';
+            wp_register_style( 'sp_catGradingCSS', plugins_url('/css/sp_catGrading' . $suffix . '.css', __FILE__), array( 'sp_admin_css' ) );
             wp_enqueue_style( 'sp_catGradingCSS' );
         }
 

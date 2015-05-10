@@ -50,6 +50,12 @@
          */
         saveNewField: function( fieldNameElem, fieldTypeElem, compID ){
             var self = this;
+
+            var gradingFieldInput = $('#' + self.FIELD_INPUT_PREFIX + compID);
+            console.log( '#' + self.FIELD_INPUT_PREFIX + compID );
+            console.log( gradingFieldInput );
+            gradingFieldInput.attr('disabled', 'disabled');
+
             $.ajax({
                 url  : SP_AJAX_URL,
                 type : 'POST',
@@ -73,6 +79,10 @@
                     self.initDeleteHandler( $('#'+ deleteElemID) ); // initialize deleting fields
 
                     $('#' + self.SUBMIT_LOADER_GIF_PREFIX_ID + compID).hide(); // hide loader
+
+                    // Clear grading field input and re-enable it
+                    gradingFieldInput.val('');
+                    gradingFieldInput.removeAttr('disabled');
                 },
                 error    : function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent)
@@ -98,9 +108,7 @@
                     compid    : compID
                 },
                 dataType : 'json',
-                success  : function(response, statusText, jqXHR){
-                    console.log( response );
-                },
+                success  : function(response, statusText, jqXHR){},
                 error    : function(jqXHR, statusText, errorThrown){
                     sp_admin.adminpage.showError(errorThrown, null);
                 }
@@ -115,7 +123,6 @@
             fieldElems.editable(function(value, settings){
                     var fieldKey = $(this).data('fieldkey');
                     var compID   = $(this).data('compid');
-
                     self.saveFieldName( value, fieldKey, compID );
                     return value;
                 },
@@ -182,7 +189,6 @@
                 var spEditor = componentElem.find( '.sp-editor-content' );
                 smartpost.sp_post.initCkEditors( spEditor );
             }
-
         },
         /**
          * Initialize JS for the grading cmoponent

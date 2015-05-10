@@ -125,7 +125,7 @@ if (!class_exists("sp_catGradingAJAX")) {
                 $options->fields[ $field_key ]->field_name = $new_name;
                 $success = $sp_cat_grading->setOptions( $options );
                 if( $success !== false ){
-                    wp_send_json( array( $success => $success ) );
+                    wp_send_json( array( 'success' => $success ) );
                 }else{
                     header("HTTP/1.0 409 Could not set field name!");
                     exit;

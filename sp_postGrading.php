@@ -218,12 +218,14 @@ if (!class_exists("sp_postGrading")) {
          * Enqueues the JS to the page.
          */
         static function enqueueJS(){
-            wp_register_script( 'sp_postGradingJS', plugins_url('/js/sp_postGrading.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_postJS' ) );
+            $suffix = SCRIPT_DEBUG ? '' : '.min';
+            wp_register_script( 'sp_postGradingJS', plugins_url('/js/sp_postGrading' . $suffix . '.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_postJS' ) );
             wp_enqueue_script( 'sp_postGradingJS' );
         }
 
         static function enqueueCSS(){
-            wp_register_style( 'sp_postGradingCSS', plugins_url('/css/sp_postGrading.css', __FILE__)  );
+            $suffix = SCRIPT_DEBUG ? '' : '.min';
+            wp_register_style( 'sp_postGradingCSS', plugins_url('/css/sp_postGrading' . $suffix . '.css', __FILE__)  );
             wp_enqueue_style( 'sp_postGradingCSS' );
         }
 
