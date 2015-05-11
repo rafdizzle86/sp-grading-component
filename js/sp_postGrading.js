@@ -32,7 +32,7 @@
             fieldElems.editable(function(value, settings){
                     var fieldKey = $(this).data('fieldkey');
                     var compID   = $(this).data('compid');
-                    self.saveGrade( fieldKey, compID );
+                    self.saveGrade( fieldKey, compID, value );
                     return value;
                 },
                 {
@@ -47,9 +47,27 @@
          * Saves a grade for a specific field
          * @param fieldKey
          * @param compID
+         * @param grade
          */
-        saveGrade: function( fieldKey, compID ){
-
+        saveGrade: function( fieldKey, compID, grade ){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    nonce  : SP_NONCE,
+                    action : 'sp_save_grade_ajax',
+                    grade  : grade,
+                    fieldKey  : fieldKey,
+                    compid    : compID
+                },
+                dataType : 'json',
+                success  : function(response, statusText, jqXHR){
+                    console.log( response );
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    smartpost.sp_postComponent.showError(errorThrown, null);
+                }
+            });
         },
         /**
          * Initializes a newly created grading component

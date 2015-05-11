@@ -48,7 +48,6 @@ if (!class_exists("sp_postGrading")) {
             // Return edit mode component if we're an admin or an owner
             if( current_user_can('edit_post', $this->postID) && $edit_mode && !$is_locked ){
                 $html = '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp-component-edit-mode' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
-
                 if( current_user_can( 'manage_options' ) ) {
                     $html .= $this->render_comp_title( true );
                     $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
@@ -171,6 +170,7 @@ if (!class_exists("sp_postGrading")) {
          * @param bool $editable
          */
         function render_field( $field_obj, $field_key, $editable = false ){
+            $grade = isset( $this->value->grading_fields[$field_key]->grade ) ? $this->value->grading_fields[$field_key]->grade : '';
             ?>
             <tr id="sp-field-row-<?php echo $this->ID?>-<?php echo $field_key ?>">
                 <td>
@@ -184,10 +184,10 @@ if (!class_exists("sp_postGrading")) {
                 </td>
                 <td>
                     <?php if( $editable ): ?>
-                    <span class="grading-field-grade-editable" id="grading-field-grade-<?php echo $this->ID?>-<?php echo $field_key ?>">
-                        <?php echo $field_obj->grade ?>
+                    <span class="grading-field-grade-editable" id="grading-field-grade-<?php echo $this->ID?>-<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>">
+                        <?php echo $grade ?>
                     <?php else: ?>
-                        <?php echo $field_obj->grade ?>
+                        <?php echo $grade ?>
                     <?php endif;?>
                     </span>
                 </td>
@@ -200,7 +200,7 @@ if (!class_exists("sp_postGrading")) {
          * @return string
          */
         function renderPreview(){
-            return self::renderViewMode();
+            return '';
         }
 
         /**
@@ -227,6 +227,13 @@ if (!class_exists("sp_postGrading")) {
             $suffix = SCRIPT_DEBUG ? '' : '.min';
             wp_register_style( 'sp_postGradingCSS', plugins_url('/css/sp_postGrading' . $suffix . '.css', __FILE__)  );
             wp_enqueue_style( 'sp_postGradingCSS' );
+        }
+
+        /**
+         * Returns the grading fields for this component
+         */
+        function get_grading_fields(){
+           return $this->options->fields;
         }
 
         /**
