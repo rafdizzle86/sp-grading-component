@@ -38,7 +38,7 @@
                 {
                     placeholder: 'Click to add a grade',
                     onblur     : 'submit',
-                    cssclass   : 'editableCatCompTitle',
+                    cssclass   : 'sp_compTitleEditable',
                     maxlength  : 35
                 }
             );

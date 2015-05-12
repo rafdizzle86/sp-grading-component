@@ -103,7 +103,7 @@ if (!class_exists("sp_postGrading")) {
 
             // Setup the grading fields
             ob_start();
-            $this->render_grading_fields();
+            $this->render_grading_fields( false );
             $html .= ob_get_clean();
 
             // Setup the comment section - @uses $settings->grading_comment
@@ -136,14 +136,17 @@ if (!class_exists("sp_postGrading")) {
             $this->render_grading_fields();
             $html .= ob_get_clean();
 
+            $html .= $this->value->grading_comment;
+
             $html .= '</div>';
             return $html;
         }
 
         /**
          * Renders the grading fields setup in the smartpost dashboard
+         * @param $view_mode
          */
-        function render_grading_fields(){
+        function render_grading_fields( $view_mode = true ){
             $options = $this->options;
             ?>
             <!-- contains the different fields -->
@@ -155,7 +158,7 @@ if (!class_exists("sp_postGrading")) {
                 <?php
                 if( is_array( $options->fields ) ){
                     foreach( $options->fields as $field_key => $field ){
-                        self::render_field( $field, $field_key, current_user_can( 'manage_options' ) );
+                        self::render_field( $field, $field_key, ( current_user_can( 'manage_options' ) && !$view_mode ) );
                     }
                 }
                 ?>
@@ -184,12 +187,10 @@ if (!class_exists("sp_postGrading")) {
                 </td>
                 <td>
                     <?php if( $editable ): ?>
-                    <span class="grading-field-grade-editable" id="grading-field-grade-<?php echo $this->ID?>-<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>">
-                        <?php echo $grade ?>
+                        <span class="grading-field-grade-editable" id="grading-field-grade-<?php echo $this->ID?>-<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>"><?php echo $grade ?></span>
                     <?php else: ?>
                         <?php echo $grade ?>
-                    <?php endif;?>
-                    </span>
+                    <?php endif; ?>
                 </td>
             </tr>
             <?php

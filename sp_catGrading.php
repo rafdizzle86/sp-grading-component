@@ -172,7 +172,17 @@ if (!class_exists("sp_catGrading")) {
          * @return bool|string
          */
         public static function globalOptions(){
-            return false;
+            ?>
+            <p>The grading component allows you to export all of any posts with a grade component into a comma-separated (CSV) file.</p>
+            <button type="button" class="button button-secondary" id="sp_grading_export_grades">Export Grades</button>
+            <?php
+        }
+
+        /**
+         * Creates the CSV output
+         */
+        function assemble_csv_output(){
+
         }
     }
 }
