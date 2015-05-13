@@ -172,9 +172,17 @@ if (!class_exists("sp_catGrading")) {
          * @return bool|string
          */
         public static function globalOptions(){
+            global $wpdb;
             ?>
             <p>The grading component allows you to export all of any posts with a grade component into a comma-separated (CSV) file.</p>
-            <button type="button" class="button button-secondary" id="sp_grading_export_grades">Export Grades</button>
+            <form action="<?php echo plugins_url( '/sp_export_grades.php', __FILE__ ) ?>" method="post" target="_blank">
+                <input type="hidden" id="dbhost" name="dbhost" value="<?php echo DB_HOST ?>" />
+                <input type="hidden" id="dbname" name="dbname" value="<?php echo DB_NAME ?>" />
+                <input type="hidden" id="dbpass" name="dbpass" value="<?php echo DB_PASSWORD ?>" />
+                <input type="hidden" id="dbuser" name="dbuser" value="<?php echo DB_USER ?>" />
+                <input type="hidden" id="wp_db_prefix" name="wp_db_prefix" value="<?php echo $wpdb->prefix ?>" />
+                <button type="submit" class="button button-secondary" id="sp_grading_export_grades">Export Grades</button>
+            </form>
             <?php
         }
 
