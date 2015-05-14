@@ -191,7 +191,7 @@
             }
         },
         /**
-         * Initialize JS for the grading cmoponent
+         * Initialize JS for the grading component
          */
         init: function(){
             var self = this;
