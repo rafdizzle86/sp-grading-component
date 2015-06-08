@@ -11,7 +11,8 @@ if (!class_exists("sp_catGrading")) {
      */
     class sp_catGrading extends sp_catComponent{
 
-        public $grade_types = array( 'alpha' => 'Alpha', 'num' => 'Numeric' );
+        // public $grade_types = array( 'alpha' => 'Alpha', 'num' => 'Numeric' );
+        public $grade_types = array( 'alpha' => 'Alpha' );
 
         function __construct($compID = 0, $catID = 0, $name = '',
                              $description = '', $typeID = 0, $order = 0,
@@ -184,13 +185,6 @@ if (!class_exists("sp_catGrading")) {
                 <button type="submit" class="button button-secondary" id="sp_grading_export_grades">Export Grades</button>
             </form>
             <?php
-        }
-
-        /**
-         * Creates the CSV output
-         */
-        function assemble_csv_output(){
-
         }
     }
 }

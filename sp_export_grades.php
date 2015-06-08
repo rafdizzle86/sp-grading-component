@@ -69,7 +69,10 @@ if( defined( 'DB_NAME' ) && defined( 'DB_USER' ) && defined( 'DB_PASS' ) && defi
     while( $sp_post_comp_obj = $sp_comp_results->fetch_object() ){
         if( $sp_post_comp_obj->typeID === $grading_type_id ){
             $post_ids[] = $sp_post_comp_obj->postID;
-            $grade_results[ $sp_post_comp_obj->postID ] = unserialize( $sp_post_comp_obj->value );
+            $grade_comp = unserialize( $sp_post_comp_obj->value );
+            $grade_comp->post_id = $sp_post_comp_obj->postID;
+            $grade_comp->grade_comp_title = $sp_post_comp_obj->name;
+            $grade_results[] = $grade_comp;
         }
     }
 
@@ -77,6 +80,8 @@ if( defined( 'DB_NAME' ) && defined( 'DB_USER' ) && defined( 'DB_PASS' ) && defi
 
     //error_log( print_r( $grade_results, true ) );
     //error_log( print_r( implode( ',', $post_ids ), true ) );
+
+
 
     // Get the author and post title
     $post_query = sprintf( 'SELECT ID, post_author, post_title FROM %sposts WHERE ID in (%s)',
@@ -94,13 +99,21 @@ if( defined( 'DB_NAME' ) && defined( 'DB_USER' ) && defined( 'DB_PASS' ) && defi
 
         while( $author_obj = $author_results->fetch_object() ){
             if( $author_obj->meta_key == 'first_name' ) {
-                $grade_results[ $post_obj->ID ]->first_name = $author_obj->meta_value;
+                $first_name = $author_obj->meta_value;
             }
             if( $author_obj->meta_key == 'last_name' ) {
-                $grade_results[ $post_obj->ID ]->last_name = $author_obj->meta_value;
+                $last_name = $author_obj->meta_value;
             }
         }
-        $grade_results[ $post_obj->ID ]->post_title = $post_obj->post_title;
+
+        // Add author & post info to grade objects
+        foreach( $grade_results as $grade_obj ){
+            if( $grade_obj->post_id === $post_obj->ID ){
+                $grade_obj->post_title = $post_obj->post_title;
+                $grade_obj->first_name = $first_name;
+                $grade_obj->last_name = $last_name;
+            }
+        }
     }
 
     $author_results->close();
@@ -111,13 +124,13 @@ if( defined( 'DB_NAME' ) && defined( 'DB_USER' ) && defined( 'DB_PASS' ) && defi
     $default_cols = array();
 
     // Define column names
+    $default_cols['First Name'] = 1;
+    $default_cols['Last Name']  = 1;
+    $default_cols['Post Category'] = 1;
     $default_cols['Post Name'] = 1;
-    $default_cols['Author - First Name'] = 1;
-    $default_cols['Author - Last Name']  = 1;
-    $default_cols['Grading Description'] = 1;
-    $default_cols['Grading Comments']    = 1;
-
+    $default_cols['Grade Component Title'] = 1;
     $grading_cols = array();
+
     // Compile grading cols
     if( !empty( $grade_results ) ){
         foreach( $grade_results as $post_id => $grade_obj ){
@@ -129,23 +142,54 @@ if( defined( 'DB_NAME' ) && defined( 'DB_USER' ) && defined( 'DB_PASS' ) && defi
         }
     }
 
-    $cols = array( array_keys( $default_cols + $grading_cols ) );
+    $cols = array(
+        array_keys(
+        $default_cols +
+        $grading_cols +
+        array( 'Grading Comments' => 1 ) //Add grading comments as last col
+        )
+    );
 
+    // Fill out each row
     foreach( $grade_results as $post_id => $grade_obj ){
 
-        $grading_desc = isset( $grade_obj->grading_desc ) ? $grade_obj->grading_desc : '';
+        $row = array();
+
         $grading_comment = isset( $grade_obj->grading_comment ) ? $grade_obj->grading_comment : '';
 
-        $cols[] = array(
-            $grade_obj->post_title,
-            $grade_obj->first_name,
-            $grade_obj->last_name,
-            $grading_desc,
-            $grading_comment
-        );
+        foreach( $cols[0] as $col_name ){
+            switch( $col_name ){
+                case 'First Name':
+                    $row[] = $grade_obj->first_name;
+                    break;
+                case 'Last Name':
+                    $row[] = $grade_obj->last_name;
+                    break;
+                case 'Post Category':
+                    $row[] = '';
+                    break;
+                case 'Post Name':
+                    $row[] = $grade_obj->post_title;
+                    break;
+                case 'Grade Component Title':
+                    $row[] = $grade_obj->grade_comp_title;
+                    break;
+                case 'Grading Comments':
+                    $row[] = stripslashes( strip_tags( html_entity_decode( $grading_comment, ENT_QUOTES, 'ISO-8859-1' ) ) );
+                    break;
+                default:
+                    $grade = '';
+                    foreach( $grade_obj->grading_fields as $field_key => $field_obj ){
+                        if( $field_obj->field_name == $col_name && isset( $field_obj->grade ) ){
+                            $grade = $field_obj->grade;
+                        }
+                    }
+                    $row[] = $grade;
+                    break;
+            }
+        }
+        $cols[] = $row;
     }
-
-    error_log( print_r( $cols, true ) );
 
 
     // output headers so that the file is downloaded rather than displayed
@@ -159,4 +203,5 @@ if( defined( 'DB_NAME' ) && defined( 'DB_USER' ) && defined( 'DB_PASS' ) && defi
     foreach( $cols as $col ) {
         fputcsv($output, $col);
     }
+
 }

@@ -109,7 +109,7 @@ if (!class_exists("sp_postGrading")) {
             // Setup the comment section - @uses $settings->grading_comment
             if( current_user_can( 'manage_options' ) ) {
                 $html .= sp_core::sp_editor(
-                    $settings->grading_comment,
+                    stripslashes( $settings->grading_comment ),
                     $this->ID . '-comment',
                     false,
                     'Add a comment here ...',
@@ -136,7 +136,7 @@ if (!class_exists("sp_postGrading")) {
             $this->render_grading_fields();
             $html .= ob_get_clean();
 
-            $html .= $this->value->grading_comment;
+            $html .= stripslashes( $this->value->grading_comment );
 
             $html .= '</div>';
             return $html;
@@ -177,6 +177,8 @@ if (!class_exists("sp_postGrading")) {
             ?>
             <tr id="sp-field-row-<?php echo $this->ID?>-<?php echo $field_key ?>">
                 <td>
+                    <?php
+                    /*
                     <?php if( $editable ): ?>
                     <span id="grading-field-<?php echo $field_key ?>" class="grading-field-editable" data-fieldkey="<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>">
                         <?php echo stripslashes( $field_obj->field_name ) ?>
@@ -184,12 +186,15 @@ if (!class_exists("sp_postGrading")) {
                     <?php else: ?>
                         <?php echo stripslashes( $field_obj->field_name ) ?>
                     <?php endif; ?>
+                     */
+                    ?>
+                    <?php echo stripslashes( $field_obj->field_name ) ?>
                 </td>
                 <td>
                     <?php if( $editable ): ?>
-                        <span class="grading-field-grade-editable" id="grading-field-grade-<?php echo $this->ID?>-<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>"><?php echo $grade ?></span>
+                        <span class="grading-field-grade-editable" id="grading-field-grade-<?php echo $this->ID?>-<?php echo $field_key ?>" data-compid="<?php echo $this->ID ?>" data-fieldkey="<?php echo $field_key ?>"><?php echo stripslashes( $grade ) ?></span>
                     <?php else: ?>
-                        <?php echo $grade ?>
+                        <?php echo stripslashes( $grade ) ?>
                     <?php endif; ?>
                 </td>
             </tr>
